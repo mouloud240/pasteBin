@@ -1,0 +1,42 @@
+
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Build directories
+bin/
+build/
+dist/
+
+# Go modules
+vendor/
+
+# Logs
+*.log
+
+# OS / Editor files
+.DS_Store
+Thumbs.db
+
+# IDE configs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Coverage / testing
+*.coverprofile
+*.cov
+coverage.out
+
+# Dependency / cache
+.env
+.env.*
+*.local
+tmp/
+.cache/
