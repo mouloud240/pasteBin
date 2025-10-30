@@ -8,6 +8,7 @@ import (
 )
 
 type PastesHandlers  struct{}
+//TODO: Figure out how to handle injection of the repository properly
 
 
 func (h *PastesHandlers) CreatePasteHanlder(c *gin.Context){
