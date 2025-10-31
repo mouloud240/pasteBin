@@ -13,7 +13,6 @@ type PastesHandlers  struct{
 func NewPastesHandlers(pastesRepo *PastesRepository) *PastesHandlers {
 	return &PastesHandlers{pastesRepo:pastesRepo}
 }
-//TODO: Figure out how to handle injection of the repository properly
 
 
 func (h *PastesHandlers) CreatePasteHanlder(c *gin.Context){
