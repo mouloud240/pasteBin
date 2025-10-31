@@ -7,14 +7,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type PastesHandlers  struct{}
+type PastesHandlers  struct{
+	pastesRepo *PastesRepository
+}
+func NewPastesHandlers(pastesRepo *PastesRepository) *PastesHandlers {
+	return &PastesHandlers{pastesRepo:pastesRepo}
+}
 //TODO: Figure out how to handle injection of the repository properly
 
 
 func (h *PastesHandlers) CreatePasteHanlder(c *gin.Context){
 	var body CreatePaste;
 	
-paste_repo:=NewPastesRepository()
+paste_repo:=h.pastesRepo
   if err:=c.BindJSON(&body);err!=nil{
 		c.JSON(400,gin.H{"error":err.Error()})
 		return;
@@ -30,8 +35,7 @@ c.JSON(201,createdPaste)
 	
 }
 func (h *PastesHandlers) GetPastesHanlder(c *gin.Context){
-	paste_repo:=NewPastesRepository()
-
+	paste_repo:=h.pastesRepo
 	 pastes,err:=paste_repo.GetPastes();
 	 if err!=nil{
 		 c.JSON(500,gin.H{"message":"something went wrong","error":err.Error()})
@@ -41,7 +45,7 @@ func (h *PastesHandlers) GetPastesHanlder(c *gin.Context){
 }
 func (h *PastesHandlers) GetPasteByIdHandler(c *gin.Context){
 
-paste_repo:=NewPastesRepository()
+paste_repo:=h.pastesRepo
 pasteId:=	c.Param("pasteId")
 password:=c.Query("password")
 
@@ -58,7 +62,7 @@ c.JSON(200,gin.H{"status":200,"paste":paste})
 }
 func (h *PastesHandlers) DeletePasteHandler(c *gin.Context){
 
-paste_repo:=NewPastesRepository()
+paste_repo:=h.pastesRepo
 pasteId:=	c.Param("pasteId")
 
 if pasteId==""{

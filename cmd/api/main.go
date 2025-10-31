@@ -19,16 +19,21 @@ func setupRouter() *gin.Engine {
 
 func main() {
 	addr:=":8080"
-	err:=initializers.InitDb()
+	db,err:=initializers.InitDb()
 	if err!=nil{
 		panic("Failed to connect to database: "+err.Error())
 	}
+	if err:=initializers.InitEnv(".env");err!=nil{
+		panic("Failed to load env variables: "+err.Error())
+	}
+  
+
 
 	r := setupRouter()
 
-	SetupRoutes(r)
+	SetupRoutes(r,db)
 
-	
+
 	// Don't trues any proxies for now until nginx is setup
 	r.SetTrustedProxies(nil)
 	// Listen and Server in 0.0.0.0:8080

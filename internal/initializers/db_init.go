@@ -5,15 +5,10 @@ import (
 
 	"gorm.io/gorm"
 )
-var DB *gorm.DB
-func InitDb()error{
-
+func InitDb()( *gorm.DB,error ){
 	db,err:=database.InitDB()
-
-	
 	if  err!=nil{
-		return err
+		return db,err
 	}
-	DB=db
-	return nil
+	return db,nil
 }

@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	. "pasteBin/internal/database/models"
-	. "pasteBin/internal/initializers"
 	. "pasteBin/internal/models"
 	"pasteBin/pkg/hash"
 	"time"
@@ -14,8 +13,8 @@ import (
 type PastesRepository struct{
 	db *gorm.DB
 }
-func NewPastesRepository() *PastesRepository {
-	return &PastesRepository{db: DB}
+func NewPastesRepository(db *gorm.DB) *PastesRepository {
+	return &PastesRepository{db: db}
 }
 func (r *PastesRepository) CreatePaste(paste CreatePaste) (*Paste,error){
 

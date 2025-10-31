@@ -1,7 +1,13 @@
 package routes
 
-import "github.com/gin-gonic/gin"
-func BindUser(r *gin.Engine)  {
+import (
+	"pasteBin/internal/handlers"
+
+	"github.com/gin-gonic/gin"
+)
+func BindUser(r *gin.Engine, userHandlers *handlers.UserHandler, middlwareFunc func (c *gin.Context) )  {
 	
-	r.Group("/user")
+	userGroup:=r.Group("/user").Use(middlwareFunc)
+	userGroup.GET("/me",userHandlers.CurrentUserHandler)
+
 }
