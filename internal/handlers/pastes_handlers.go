@@ -3,6 +3,8 @@ package handlers
 import (
 	. "pasteBin/internal/database/repository"
 	. "pasteBin/internal/models"
+	"pasteBin/pkg/sessions"
+	"pasteBin/pkg/sessions/extractors"
 
 	"github.com/gin-gonic/gin"
 )
@@ -18,12 +20,24 @@ func NewPastesHandlers(pastesRepo *PastesRepository) *PastesHandlers {
 func (h *PastesHandlers) CreatePasteHanlder(c *gin.Context){
 	var body CreatePaste;
 	
+	
 paste_repo:=h.pastesRepo
   if err:=c.BindJSON(&body);err!=nil{
 		c.JSON(400,gin.H{"error":err.Error()})
 		return;
 	}
-  createdPaste,err:=paste_repo.CreatePaste(body)
+	isAuthenticated,exists:=c.Get("isAuthenticated")
+	var userId *uint;
+	if exists && isAuthenticated.(bool){
+		currentUser,exists:=c.Get("currentUser")
+		if exists{
+			parsedUser:=currentUser.(*sessions.SessionPayload)
+			userId=&parsedUser.UserID
+		}
+
+	}
+  createdPaste,err:=paste_repo.CreatePaste(body,userId)
+
 	if (err!=nil){
 		c.JSON(500,gin.H{"message":"something went wrong","error":err.Error()})
 	}
@@ -63,12 +77,18 @@ func (h *PastesHandlers) DeletePasteHandler(c *gin.Context){
 
 paste_repo:=h.pastesRepo
 pasteId:=	c.Param("pasteId")
+user,exists:=extractors.ExtractUserSessionPayload(c)
+
+if !exists{
+	c.JSON(401,gin.H{"status":401,"error":"unauthorized"})
+	return;
+}
 
 if pasteId==""{
 	c.JSON(400,gin.H{"status":400,"error":"paste Id must be provided"})
 	return;
 }
-if err:= paste_repo.DeletePaste(pasteId);err!=nil{
+if err:= paste_repo.DeletePaste(pasteId,user.UserID);err!=nil{
 	c.JSON(500,gin.H{"status":500,"error":err.Error()})
 	return;
 }

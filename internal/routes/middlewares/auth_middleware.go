@@ -1,7 +1,6 @@
 package middlewares
 
 import (
-	"log"
 	"pasteBin/internal/database/repository"
 	"pasteBin/pkg/sessions"
 
@@ -20,9 +19,22 @@ func NewAuthMiddleware(repo *repository.UserRepository, sm *sessions.SessionMana
 	}
 }
 func (m *AuthMiddlewareStruct) AuthMiddleware(c *gin.Context ){
+	public,	exists := c.Get("isPublic")
+	if exists && public.(bool) {
+		c.Next()
+		return
+	}
+
+	public_private,	exists := c.Get("isPublicPrivate")
 
 	payload, err := m.sm.Get(c.Request)
 	if err != nil || payload == nil {
+		if public_private!=nil && public_private.(bool){
+			c.Set("isAuthenticated", false)
+			c.Next()
+			return
+		}
+
 		c.AbortWithStatusJSON(401, gin.H{
 			"status":  401,
 			"message": "Unauthorized",
@@ -31,10 +43,14 @@ func (m *AuthMiddlewareStruct) AuthMiddleware(c *gin.Context ){
 		return
 	}
 
-	log.Print("Authenticated user ID: ", payload.UserID)
 	user,err:=m.repo.GetUserByID(payload.UserID)
 
 	if user==nil{
+		if public_private!=nil && public_private.(bool){
+			c.Set("isAuthenticated", false)
+			c.Next()
+			return
+		}
 		
 		c.AbortWithStatusJSON(401, gin.H{
 			"status":  401,
@@ -51,5 +67,7 @@ func (m *AuthMiddlewareStruct) AuthMiddleware(c *gin.Context ){
 		})
 		return
 	}
+	c.Set("isAuthenticated", true)
 	c.Set("currentUser", payload)
+	c.Next()
 }

@@ -16,11 +16,11 @@ type PastesRepository struct{
 func NewPastesRepository(db *gorm.DB) *PastesRepository {
 	return &PastesRepository{db: db}
 }
-func (r *PastesRepository) CreatePaste(paste CreatePaste) (*Paste,error){
+func (r *PastesRepository) CreatePaste(paste CreatePaste,userId *uint) (*Paste,error){
 
 	
-	input:=Paste{Content:paste.Content,Password:paste.Password,MaxViews:paste.MaxViews}
-	ctx:=context.Background()
+	input:=Paste{Content:paste.Content,Password:paste.Password,MaxViews:paste.MaxViews,UserID:userId}
+		ctx:=context.Background()
 	result:=gorm.WithResult()
 	err:=gorm.G[Paste](r.db,result).Create(ctx,&input)
 	if err!=nil {
@@ -42,7 +42,7 @@ var		pastes []Paste;
 
 		
 		var paste *Paste
-		err := r.db.Session(&gorm.Session{SkipHooks: true}).Where("id=?", id).First(&paste).Error
+		err := r.db.Session(&gorm.Session{SkipHooks: true}).Where("id=?", id).Preload("Author",nil).First(&paste).Error
 		if err!=nil{
 			return  nil,err
 		}
@@ -87,9 +87,9 @@ _,err:=gorm.G[Paste](r.db).Where("id=?",paste.ID).Update(ctx,"max_views",gorm.Ex
 		return paste,nil;
 	}
 	
-	func (r *PastesRepository) DeletePaste(id string)(error){
+	func (r *PastesRepository) DeletePaste(id string,userId uint )(error){
 
-		if err:=r.db.Delete(&Paste{},id);err!=nil{
+		if err:=r.db.Where("UserID=?",userId).Delete(&Paste{},id);err!=nil{
 			if err.RowsAffected==0{
 				return errors.New("Paste Not found")
 			}

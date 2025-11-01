@@ -14,8 +14,8 @@ type Paste struct {
 	Content 	 string
 	Password *string `json:"-"`
 	MaxViews  *int
-	UserID		*uint 
-	author User  `gorm:"foreignKey:UserID" json:"Author"`
+	UserID		*uint `json:"-"`
+	Author User  `gorm:"foreignKey:UserID" json:"author"`
 	ExpirationDate *sql.NullTime	
 	TimeModel
 }

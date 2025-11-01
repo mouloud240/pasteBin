@@ -2,13 +2,17 @@ package routes
 
 import (
 	. "pasteBin/internal/handlers"
+	"pasteBin/internal/routes/middlewares"
 
 	"github.com/gin-gonic/gin"
 )
-func BindPaste(r *gin.Engine,p *PastesHandlers)  {
+func BindPaste(r *gin.Engine,p *PastesHandlers, authMiddleware gin.HandlerFunc)  {
+
+  privateRoutes:=r.Group("/pastes").Use(authMiddleware)
 	pastesRoutes:=r.Group("/pastes")
-	pastesRoutes.POST("/",p.CreatePasteHanlder)
+	pastesPublicPrivateRoutes:=r.Group("/pastes").Use(middlewares.PublicPrivate(),authMiddleware)
+	pastesPublicPrivateRoutes.POST("/",p.CreatePasteHanlder)
 	pastesRoutes.GET("/",p.GetPastesHanlder)
-	pastesRoutes.GET("/:pasteId",p.GetPasteByIdHandler)
-	pastesRoutes.DELETE("/:pasteId",p.DeletePasteHandler)
+	pastesPublicPrivateRoutes.GET("/:pasteId",p.GetPasteByIdHandler)
+	privateRoutes.DELETE("/:pasteId",p.DeletePasteHandler)
 }

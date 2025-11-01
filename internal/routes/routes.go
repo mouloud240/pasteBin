@@ -19,7 +19,7 @@ pastesHandlers:=handlers.NewPastesHandlers(repository.NewPastesRepository(db))
 authHandlers:=handlers.NewAuthHandlers(repository.NewUserRepository(db),sessionManager)
 //Bind Routes
 //Pastes Routes
-BindPaste(r,pastesHandlers)	
+BindPaste(r,pastesHandlers,middlwareFunc.AuthMiddleware)	
 
 //Auth Routes
 BindAuth(r,authHandlers)
