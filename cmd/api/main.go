@@ -11,7 +11,7 @@ import (
 )
 
 // setupRouter initializes the Gin router
-// Returs:
+// Returns:
 //   *gin.Engine: The initialized Gin router
 func setupRouter() *gin.Engine {
 	r := gin.Default()
@@ -31,7 +31,11 @@ func main() {
 		panic("Failed to load env variables: "+err.Error())
 	}
   
-
+	sqlDb,err:=db.DB()
+	if err!=nil{
+		panic("Failed to get database instance: "+err.Error())
+	}
+	defer sqlDb.Close()
 
 	r := setupRouter()
 	c:=cron.Cron{}
@@ -39,19 +43,10 @@ func main() {
 	SetupRoutes(r,db)
 	crons.NewCronsManager(db,&c).InitCrons()
 
-	sqlDb,err:=db.DB()
-	if err!=nil{
-		panic("Failed to get database instance: "+err.Error())
-	}
-	defer sqlDb.Close()
-
-	// Don't trues any proxies for now until nginx is setup
+	// Don't trust any proxies for now until nginx is setup
 	r.SetTrustedProxies(nil)
 	// Listen and Server in 0.0.0.0:8080
 	r.Run(addr);
-	if err!=nil{
-		panic("Failed to get database instance: "+err.Error())
-	}
 
 }
 

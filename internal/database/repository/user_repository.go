@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"pasteBin/internal/database/models"
 	"pasteBin/pkg/exception"
 
@@ -17,21 +18,21 @@ func NewUserRepository(db *gorm.DB) *UserRepository {
 	return &UserRepository{db: db}
 }
 
-func (r *UserRepository) CreateUser(createUser *RegisterModel) (*models.User, *exception.AppError) {
+func (r *UserRepository) CreateUser(ctx context.Context, createUser *RegisterModel) (*models.User, *exception.AppError) {
 	user := &models.User{
 		Username: createUser.UserName,
 		Email:    createUser.Email,
 		Password: &createUser.Password,
 	}
-	result := r.db.Create(user)
-	if result.Error != nil {
-		return nil, exception.NewInternalServerError("Failed to create user", result.Error)
+	err := gorm.G[models.User](r.db).Create(ctx,user)
+	if err!= nil {
+		return nil, exception.NewInternalServerError("Failed to create user", err.Error)
 	}
 	return user, nil
 }
-func (r *UserRepository) GetUserByID(id uint) (*models.User, error) {
+func (r *UserRepository) GetUserByID(ctx context.Context, id uint) (*models.User, error) {
 	var user models.User
-	result := r.db.First(&user, id)
+	result := r.db.WithContext(ctx).First(&user, id)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -41,18 +42,18 @@ func (r *UserRepository) GetUserByID(id uint) (*models.User, error) {
 	return &user, nil
 }
 
-func (r *UserRepository) GetUserByUsername(username string) (*models.User, error) {
+func (r *UserRepository) GetUserByUsername(ctx context.Context, username string) (*models.User, error) {
 	var user models.User
-	result := r.db.Where("username = ?", username).First(&user)
+	result := r.db.WithContext(ctx).Where("username = ?", username).First(&user)
 	if result.Error != nil {
 		return nil, result.Error
 	}
 	return &user, nil
 }
 
-func (r *UserRepository) GetUserByEmail(email string) (*models.User, error) {
+func (r *UserRepository) GetUserByEmail(ctx context.Context, email string) (*models.User, error) {
 	var user models.User
-	result := r.db.Where("email = ?", email).First(&user)
+	result := r.db.WithContext(ctx).Where("email = ?", email).First(&user)
 if result.RowsAffected == 0 {
 		return nil, exception.NewNotFoundError("User not found")
 	}

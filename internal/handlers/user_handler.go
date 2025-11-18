@@ -23,7 +23,8 @@ func (h *UserHandler) CurrentUserHandler(c *gin.Context) {
 		return;
 	}
 	parsedUser:=currentUser.(*sessions.SessionPayload)
-	user,err:=h.userRepo.GetUserByID(parsedUser.UserID)
+	ctx := c.Request.Context()
+	user,err:=h.userRepo.GetUserByID(ctx, parsedUser.UserID)
 	if err!=nil{
 		c.JSON(500,gin.H{"status":500,"error":"something went wrong"})
 		return;

@@ -37,7 +37,8 @@ paste_repo:=h.pastesRepo
 		}
 
 	}
-  createdPaste,err:=paste_repo.CreatePaste(body,userId)
+	ctx := c.Request.Context()
+  createdPaste,err:=paste_repo.CreatePaste(ctx, body,userId)
 
 	if (err!=nil){
 		c.JSON(500,gin.H{"message":"something went wrong","error":err.Error()})
@@ -63,8 +64,8 @@ func (h *PastesHandlers) GetPastesHanlder(c *gin.Context){
 		limit=10
 	 }
 	
-
-	 pastes,err:=paste_repo.GetPastes(&page,&limit);
+	 ctx := c.Request.Context()
+	 pastes,err:=paste_repo.GetPastes(ctx, &page,&limit);
 	 if err!=nil{
 		 c.JSON(500,gin.H{"message":"something went wrong","error":err.Error()})
 	 }
@@ -81,7 +82,8 @@ if pasteId==""{
 	c.JSON(400,gin.H{"status":400,"error":"paste Id must be provided"})
 	return;
 }
-paste,err:=paste_repo.GetPaste(pasteId,password)
+ctx := c.Request.Context()
+paste,err:=paste_repo.GetPaste(ctx, pasteId,password)
 if err!=nil{
 	c.JSON(400,gin.H{"status":400,"error":err.Error()})
 	return
@@ -103,7 +105,8 @@ if pasteId==""{
 	c.JSON(400,gin.H{"status":400,"error":"paste Id must be provided"})
 	return;
 }
-if err:= paste_repo.DeletePaste(pasteId,user.UserID);err!=nil{
+ctx := c.Request.Context()
+if err:= paste_repo.DeletePaste(ctx, pasteId,user.UserID);err!=nil{
 	c.JSON(500,gin.H{"status":500,"error":err.Error()})
 	return;
 }

@@ -43,7 +43,8 @@ func (m *AuthMiddlewareStruct) AuthMiddleware(c *gin.Context ){
 		return
 	}
 
-	user,err:=m.repo.GetUserByID(payload.UserID)
+	ctx := c.Request.Context()
+	user,err:=m.repo.GetUserByID(ctx, payload.UserID)
 
 	if user==nil{
 		if public_private!=nil && public_private.(bool){

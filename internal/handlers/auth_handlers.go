@@ -33,7 +33,8 @@ func (h *AuthHandlers) RegisterHandler(c *gin.Context) {
    c.JSON(400,gin.H{"status":400, "message":"Bad request", "error":err.Error()})
 	 return;
 	}
-	user,err:=h.userRepo.CreateUser(body)
+	ctx:=c.Request.Context()
+	user,err:=h.userRepo.CreateUser(ctx, body)
 	if err!=nil{
 		c.Error(err)
 				return
@@ -58,7 +59,8 @@ func (h *AuthHandlers) LoginHandler(c *gin.Context) {
 			"error":err.Error(),
 		})
 	}
-	user,err:=h.userRepo.GetUserByEmail(body.Email)
+	ctx := c.Request.Context()
+	user,err:=h.userRepo.GetUserByEmail(ctx, body.Email)
 	
 	if err!=nil{
 		c.Error(err)
@@ -85,8 +87,6 @@ func (h *AuthHandlers) LoginHandler(c *gin.Context) {
 		return
 	}
 	if *match==false{
-log.Print("Hashed Pass",*user.Password)
-		log.Print("User provided",body.Password)
 
 			c.JSON(401,gin.H{
 			"status":401,
