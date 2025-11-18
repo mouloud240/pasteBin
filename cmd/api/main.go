@@ -3,12 +3,32 @@ package main
 import (
 	"pasteBin/internal/crons"
 	"pasteBin/internal/database"
-	"pasteBin/internal/initializers"
 	. "pasteBin/internal/routes"
+   swaggerfiles "github.com/swaggo/files"
+   ginSwagger "github.com/swaggo/gin-swagger"
 
+	docs "pasteBin/cmd/api/docs"
 	"github.com/gin-gonic/gin"
 	"github.com/robfig/cron"
 )
+
+// @title Pastebin API
+// @version 1.0
+// @description A simple pastebin service API
+// @termsOfService http://swagger.io/terms/
+
+// @contact.name API Support
+// @contact.email support@pastebin.local
+
+// @license.name MIT
+// @license.url https://opensource.org/licenses/MIT
+
+// @host localhost:8080
+// @BasePath /
+
+// @securityDefinitions.apikey CookieAuth
+// @in cookie
+// @name auth
 
 // setupRouter initializes the Gin router
 // Returns:
@@ -21,16 +41,14 @@ func setupRouter() *gin.Engine {
 }
 
 func main() {
+	 docs.SwaggerInfo.BasePath = "/"
 	addr:=":8080"
 	db,err:=database.InitDB()
 	if  err!=nil{
 		panic("Failed to connect to database:" +err.Error())
 	}
 
-		if err:=initializers.InitEnv(".env");err!=nil{
-		panic("Failed to load env variables: "+err.Error())
-	}
-  
+		  
 	sqlDb,err:=db.DB()
 	if err!=nil{
 		panic("Failed to get database instance: "+err.Error())
@@ -38,6 +56,7 @@ func main() {
 	defer sqlDb.Close()
 
 	r := setupRouter()
+	  r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	c:=cron.Cron{}
 
 	SetupRoutes(r,db)

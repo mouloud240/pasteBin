@@ -27,6 +27,17 @@ func NewAuthHandlers(userRepo *repository.UserRepository, sm *sessions.SessionMa
 	return &AuthHandlers{userRepo: userRepo,sm: sm}
 }
 
+// RegisterHandler godoc
+// @Summary Register a new user
+// @Description Register a new user with username, email and password
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param body body models.RegisterModel true "Registration credentials"
+// @Success 201 {object} map[string]interface{} "User created successfully"
+// @Failure 400 {object} map[string]interface{} "Bad request"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /auth/register [post]
 func (h *AuthHandlers) RegisterHandler(c *gin.Context) {
 	var  body *models.RegisterModel
 	if err:=c.BindJSON(&body); err!=nil{
@@ -50,6 +61,18 @@ func (h *AuthHandlers) RegisterHandler(c *gin.Context) {
 	
 }
 
+// LoginHandler godoc
+// @Summary Login user
+// @Description Authenticate user with email and password
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param body body models.BasicLoginModel true "Login credentials"
+// @Success 200 {object} map[string]interface{} "Login successful"
+// @Failure 400 {object} map[string]interface{} "Bad request"
+// @Failure 401 {object} map[string]interface{} "Invalid credentials"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /auth/login [post]
 func (h *AuthHandlers) LoginHandler(c *gin.Context) {
 	var body *models.BasicLoginModel
 	if err:=c.BindJSON(&body) ;err!=nil{
@@ -103,6 +126,15 @@ func (h *AuthHandlers) LoginHandler(c *gin.Context) {
 		"data":gin.H{"user":user},
 	})
 }
+// LogoutHandler godoc
+// @Summary Logout user
+// @Description Destroy user session
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Success 204 "Logout successful"
+// @Security CookieAuth
+// @Router /auth/logout [delete]
 func (h *AuthHandlers) LogoutHandler(c *gin.Context) {
 	h.sm.Destroy(c.Request,c.Writer)
 	c.JSON(204,nil)

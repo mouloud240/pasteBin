@@ -16,6 +16,13 @@ func NewUserHandler(userRepo *repository.UserRepository) *UserHandler {
 }
 
 
+// User Handler Doc
+// @Summary Gets the current logged in user info
+// @Accept json
+// @Produce json  
+// @Success 200  {object} 	models.UserResponseDto
+// @Failure 401 {object} map[string]interface{} "unauthorized"
+// @Router /user/me [get]
 func (h *UserHandler) CurrentUserHandler(c *gin.Context) {
   currentUser,exists:= c.Get("currentUser")
 	if !exists{

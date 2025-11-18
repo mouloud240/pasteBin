@@ -1,0 +1,309 @@
+basePath: /
+definitions:
+  models.BasicLoginModel:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  models.CreatePaste:
+    properties:
+      content:
+        type: string
+      expires_at:
+        type: string
+      maxViews:
+        minimum: 1
+        type: integer
+      password:
+        minLength: 8
+        type: string
+    required:
+    - content
+    type: object
+  models.RegisterModel:
+    properties:
+      email:
+        type: string
+      password:
+        minLength: 8
+        type: string
+      username:
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
+  models.UserResponseDto:
+    properties:
+      createdAt:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      isAdmin:
+        type: boolean
+      updatedAt:
+        type: string
+      username:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@pastebin.local
+    name: API Support
+  description: A simple pastebin service API
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: Pastebin API
+  version: "1.0"
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user with email and password
+      parameters:
+      - description: Login credentials
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.BasicLoginModel'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Login successful
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Invalid credentials
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Login user
+      tags:
+      - Auth
+  /auth/logout:
+    delete:
+      consumes:
+      - application/json
+      description: Destroy user session
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Logout successful
+      security:
+      - CookieAuth: []
+      summary: Logout user
+      tags:
+      - Auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user with username, email and password
+      parameters:
+      - description: Registration credentials
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.RegisterModel'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: User created successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Register a new user
+      tags:
+      - Auth
+  /pastes:
+    get:
+      consumes:
+      - application/json
+      description: Get paginated list of all public pastes
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of pastes
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get list of pastes
+      tags:
+      - Pastes
+    post:
+      consumes:
+      - application/json
+      description: Create a new paste with optional password protection, expiration,
+        and view limit
+      parameters:
+      - description: Paste data
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreatePaste'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Paste created successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create a new paste
+      tags:
+      - Pastes
+  /pastes/{pasteId}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a paste (only owner can delete)
+      parameters:
+      - description: Paste ID
+        in: path
+        name: pasteId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Paste deleted successfully
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Delete a paste
+      tags:
+      - Pastes
+    get:
+      consumes:
+      - application/json
+      description: Get paste by ID, requires password if paste is protected
+      parameters:
+      - description: Paste ID
+        in: path
+        name: pasteId
+        required: true
+        type: string
+      - description: Password for protected paste
+        in: query
+        name: password
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Paste data
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request or invalid password
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get a specific paste
+      tags:
+      - Pastes
+  /user/me:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserResponseDto'
+        "401":
+          description: unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Gets the current logged in user info
+securityDefinitions:
+  CookieAuth:
+    in: cookie
+    name: auth
+    type: apiKey
+swagger: "2.0"
