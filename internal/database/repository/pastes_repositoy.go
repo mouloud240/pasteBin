@@ -2,9 +2,12 @@ package repository
 
 import (
 	"context"
+	"database/sql"
 	"errors"
+	"log"
 	. "pasteBin/internal/database/models"
 	. "pasteBin/internal/models"
+	"pasteBin/pkg/exception"
 	"pasteBin/pkg/hash"
 	"time"
 
@@ -19,7 +22,7 @@ func NewPastesRepository(db *gorm.DB) *PastesRepository {
 func (r *PastesRepository) CreatePaste(paste CreatePaste,userId *uint) (*Paste,error){
 
 	
-	input:=Paste{Content:paste.Content,Password:paste.Password,MaxViews:paste.MaxViews,UserID:userId}
+	input:=Paste{Content:paste.Content,Password:paste.Password,MaxViews:paste.MaxViews,UserID:userId,ExpirationDate: &sql.NullTime{Time: *paste.Expires_at,Valid: paste.Expires_at != nil}}
 		ctx:=context.Background()
 	result:=gorm.WithResult()
 	err:=gorm.G[Paste](r.db,result).Create(ctx,&input)
@@ -29,15 +32,18 @@ func (r *PastesRepository) CreatePaste(paste CreatePaste,userId *uint) (*Paste,e
 
 	return &input,nil;
 	}
-	func (r *PastesRepository) GetPastes()([]Paste,error){
+	func (r *PastesRepository) GetPastes(page *int, limit *int)([]Paste,error){
 
-var		pastes []Paste;
-		result:=r.db.Find(&pastes).Where("deleted_at!=null")
+  var pastes []Paste;
+	
+	offset:=(*page-1)*(*limit)
+		result:=r.db.Preload("Author").Where("max_views!=0").Limit(*limit).Offset(offset).Find(&pastes)
 		if result.Error!=nil{
 			return nil,result.Error
 		}
 		return pastes,nil;
 	}
+
 	func (r *PastesRepository) GetPaste(id string,password string)(*Paste,error) {
 
 		
@@ -98,5 +104,14 @@ _,err:=gorm.G[Paste](r.db).Where("id=?",paste.ID).Update(ctx,"max_views",gorm.Ex
 		
 		return nil;
 	
+	}
+	func (r *PastesRepository) DeleteExpiredPastes()(error){
+		ctx:=context.Background();
+	res,err:=gorm.G[Paste](r.db).Where("expiration_date IS NOT NULL AND expiration_date <= ?",sql.NullTime{Time: time.Now(),Valid: true}).Delete(ctx);
+	if err!=nil{
+		return exception.NewInternalServerError("Failed to delete expired pastes",err)
+	}
+	log.Printf("Deleted %d expired pastes",res)
+	return nil;
 	}
 

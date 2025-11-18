@@ -22,7 +22,7 @@ func InitDB() (*gorm.DB, error) {
 
 	// Set connection pool settings
 	sqlDB.SetMaxOpenConns(25)
-	sqlDB.SetMaxIdleConns(25)
+	sqlDB.SetMaxIdleConns(10)
 	sqlDB.SetConnMaxLifetime(0)
 
 	return db, nil

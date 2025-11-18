@@ -5,6 +5,7 @@ import (
 	. "pasteBin/internal/models"
 	"pasteBin/pkg/sessions"
 	"pasteBin/pkg/sessions/extractors"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -49,7 +50,21 @@ c.JSON(201,createdPaste)
 }
 func (h *PastesHandlers) GetPastesHanlder(c *gin.Context){
 	paste_repo:=h.pastesRepo
-	 pastes,err:=paste_repo.GetPastes();
+	pageRaw:=c.Query("page")
+	limitRaw:=c.Query("limit")
+
+
+	 page,err:=strconv.Atoi(pageRaw)
+	 if err!=nil{
+		page=1
+	 }
+	 limit,err:=strconv.Atoi(limitRaw)
+	 if err!=nil{
+		limit=10
+	 }
+	
+
+	 pastes,err:=paste_repo.GetPastes(&page,&limit);
 	 if err!=nil{
 		 c.JSON(500,gin.H{"message":"something went wrong","error":err.Error()})
 	 }

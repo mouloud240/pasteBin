@@ -13,7 +13,7 @@ type Paste struct {
 	ID string `gorm:"primaryKey;type:uuid`
 	Content 	 string
 	Password *string `json:"-"`
-	MaxViews  *int
+	MaxViews  *int `gorm:"default:null"`
 	UserID		*uint `json:"-"`
 	Author User  `gorm:"foreignKey:UserID" json:"author"`
 	ExpirationDate *sql.NullTime	
@@ -40,6 +40,17 @@ func (p *Paste) AfterFind(tx *gorm.DB)(err error){
 	if p.Password!=nil {
 		p.Content="Password protected!"
 	}
+	if p.ExpirationDate!=nil{
+		if p.ExpirationDate.Valid {
+			if p.ExpirationDate.Time.Before(tx.NowFunc()) {
+				tx.Delete(&p)
+				
+
+			}
+			return;
+	}
+}
+
 	return;
 }
 

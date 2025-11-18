@@ -35,12 +35,8 @@ func (h *AuthHandlers) RegisterHandler(c *gin.Context) {
 	}
 	user,err:=h.userRepo.CreateUser(body)
 	if err!=nil{
-		c.JSON(500,gin.H{
-			"status":500,
-			"message":"Internal server error",
-			"error":err.Error(),
-		})
-		return
+		c.Error(err)
+				return
 	}
 	payload:=setupSessionPayload(*user)
 	h.sm.Set(c.Request,c.Writer,payload)
@@ -63,24 +59,10 @@ func (h *AuthHandlers) LoginHandler(c *gin.Context) {
 		})
 	}
 	user,err:=h.userRepo.GetUserByEmail(body.Email)
-	if user==nil{
-		log.Print("User not found with email: ", body.Email)
-		c.JSON(401,gin.H{
-			"status":401,
-			"message":"Unauthorized",
-			"error":"Invalid email or password",
-		})
-		return
-
-	}
+	
 	if err!=nil{
-
-		c.JSON(500,gin.H{
-			"status":500,
-			"message":"Internal server error",
-			"error":err.Error(),
-		})
-		return
+		c.Error(err)
+		return;
 	}
 
 	if user.Password==nil{
